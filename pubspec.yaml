@@ -1,0 +1,5 @@
+name: flutter_cxs_utils
+environment:
+  sdk: ">=3.6.1 <4.0.0"
+dev_dependencies:
+  melos: ^6.3.2

@@ -1,0 +1,19 @@
+name: flutter_cxs_utils
+
+packages:
+  - packages/**
+
+scripts:
+  analyze:
+    run: dart analyze .
+    description: Run dart analyze on all packages
+  format:
+    run: dart format --set-exit-if-changed .
+    description: Format all packages
+  test:
+    run: flutter test
+    description: Run tests in all packages
+
+dependencyOverrides:
+  flutter_blue_plus: ^1.35.3
+  path_provider: ^2.1.5

@@ -1,0 +1,10 @@
+# Dart & Flutter
+.dart_tool/
+.packages
+build/
+.pub-cache/
+.idea/
+*.iml
+
+# Melos
+.melos_tool/
