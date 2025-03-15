@@ -10,6 +10,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_cxs_common_utils:
+    git:
+      url: https://github.com/XIAN-SHENG-576692/flutter_cxs_utils.git
+      path: packages/flutter_cxs_common_utils
+
+dependency_overrides:
   flutter_cxs_common_utils: any
 
 dev_dependencies:
