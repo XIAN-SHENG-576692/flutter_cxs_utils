@@ -47,13 +47,14 @@ class CustomBluetoothDevice {
   }
 }
 
-class CustomBluetoothDeviceTracker extends AbstractBluetoothDeviceTracker<CustomBluetoothDevice> {
+class CustomBluetoothDeviceTracker<D extends CustomBluetoothDevice> extends AbstractBluetoothDeviceTracker<D> {
   CustomBluetoothDeviceTracker({
     required List<BluetoothDevice> devices,
+    required D Function(BluetoothDevice device) deviceCreator,
   }) : super(
-    devices: devices.map((d) => CustomBluetoothDevice(bluetoothDevice: d)).toList(),
+    devices: devices.map(deviceCreator).toList(),
     createNewDeviceByResult: (result) {
-      final device = CustomBluetoothDevice(bluetoothDevice: result.device);
+      final device = deviceCreator(result.device);
       return device..onUpdateByScanResult(result);
     },
     isExistingInDevices: (result, device) => device.matchesScanResult(result),
