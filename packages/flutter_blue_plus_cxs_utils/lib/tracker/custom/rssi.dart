@@ -31,7 +31,7 @@ mixin CustomBluetoothDeviceRssi on CustomBluetoothDevice {
   }
 }
 
-mixin CustomBluetoothDeviceTrackerRssi on CustomBluetoothDeviceTracker<CustomBluetoothDeviceRssi> {
+mixin CustomBluetoothDeviceTrackerRssi<D extends CustomBluetoothDeviceRssi> on CustomBluetoothDeviceTracker<D> {
   Timer readRssi({
     required Duration duration,
     int timeout = 15,
