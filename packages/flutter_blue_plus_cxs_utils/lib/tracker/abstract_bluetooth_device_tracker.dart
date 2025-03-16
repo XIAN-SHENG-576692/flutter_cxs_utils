@@ -3,10 +3,20 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
+class AbstractBluetoothDeviceUpdate<D> {
+  D device;
+  bool isNew;
+  AbstractBluetoothDeviceUpdate({
+    required this.device,
+    required this.isNew,
+  });
+}
+
 class AbstractBluetoothDeviceTracker<D> {
   Iterable<D> get devices => _devices;
-  Stream<D> get newDevicesStream => _newDevicesStreamController.stream;
-  Stream<D> get oldDevicesStream => _oldDevicesStreamController.stream;
+  Stream<AbstractBluetoothDeviceUpdate> get onUpdateDevicesStream => _devicesStreamController.stream;
+  Stream<D> get onCreateNewDeviceStream => _devicesStreamController.stream.where((event) => event.isNew).map((event) => event.device);
+  Stream<D> get onUpdateOldDeviceStream => _devicesStreamController.stream.where((event) => !event.isNew).map((event) => event.device);
   final D Function(ScanResult result) createNewDeviceByResult;
   final Function(ScanResult result, D oldDevice)? onExistingDeviceUpdated;
   final bool Function(ScanResult result, D device) isExistingInDevices;
@@ -18,8 +28,7 @@ class AbstractBluetoothDeviceTracker<D> {
   }) : _devices = devices {
     _scanResultsSubscription = FlutterBluePlus.scanResults.listen(_updateResults);
   }
-  final StreamController<D> _newDevicesStreamController = StreamController.broadcast();
-  final StreamController<D> _oldDevicesStreamController = StreamController.broadcast();
+  final StreamController<AbstractBluetoothDeviceUpdate<D>> _devicesStreamController = StreamController.broadcast();
   final List<D> _devices;
   late final StreamSubscription _scanResultsSubscription;
   void _updateResults(List<ScanResult> results) {
@@ -30,31 +39,31 @@ class AbstractBluetoothDeviceTracker<D> {
       if(device == null) {
         final newDevice = createNewDeviceByResult(result);
         _devices.add(newDevice);
-        _newDevicesStreamController.sink.add(newDevice);
+        _devicesStreamController.sink.add(AbstractBluetoothDeviceUpdate(
+          device: newDevice,
+          isNew: true,
+        ));
       } else {
         onExistingDeviceUpdated?.call(result, device);
-        _oldDevicesStreamController.sink.add(device);
+        _devicesStreamController.sink.add(AbstractBluetoothDeviceUpdate(
+          device: device,
+          isNew: false,
+        ));
       }
     }
   }
   @mustCallSuper
   void cancel() {
     _scanResultsSubscription.cancel();
-    _newDevicesStreamController.close();
-    _oldDevicesStreamController.close();
-  }
-}
-
-class _ChangeNotifier extends ChangeNotifier {
-  @override
-  void notifyListeners() {
-    super.notifyListeners();
+    _devicesStreamController.close();
   }
 }
 
 class AbstractBluetoothDeviceTrackerChangeNotifier<D> extends ChangeNotifier {
 
   Iterable<D> get devices => tracker.devices;
+
+  AbstractBluetoothDeviceUpdate? lastUpdatedDevice;
 
   @protected
   @visibleForTesting
@@ -66,79 +75,21 @@ class AbstractBluetoothDeviceTrackerChangeNotifier<D> extends ChangeNotifier {
   @protected
   @override
   void dispose() {
-    _newDeviceSubscription.cancel();
-    _oldDeviceSubscription.cancel();
+    _onUpdateDevicesSubscription.cancel();
     super.dispose();
   }
 
   @protected
   final AbstractBluetoothDeviceTracker<D> tracker;
-  @protected
-  void Function(D device, void Function() notifyListeners)? onNewDevicesFounded;
-  @protected
-  void Function(D device, void Function() notifyListeners)? onOldDevicesUpdated;
 
   AbstractBluetoothDeviceTrackerChangeNotifier({
     required this.tracker,
-    this.onNewDevicesFounded,
-    this.onOldDevicesUpdated,
   }) {
-    _newDeviceSubscription = tracker.newDevicesStream.listen((device) {
-      onNewDevicesFounded?.call(device, notifyListeners);
-    });
-    _oldDeviceSubscription = tracker.oldDevicesStream.listen((device) {
-      onNewDevicesFounded?.call(device, notifyListeners);
+    _onUpdateDevicesSubscription = tracker.onUpdateDevicesStream.listen((device) {
+      lastUpdatedDevice = device;
+      notifyListeners();
     });
   }
 
-  late final StreamSubscription _newDeviceSubscription;
-  late final StreamSubscription _oldDeviceSubscription;
-}
-
-class AbstractBluetoothDeviceTrackerNotifier<D> {
-
-  Iterable<D> get devices => tracker.devices;
-
-  final _ChangeNotifier _notifierNew = _ChangeNotifier();
-  final _ChangeNotifier _notifierOld = _ChangeNotifier();
-
-  @mustCallSuper
-  void dispose() {
-    _newDeviceSubscription.cancel();
-    _oldDeviceSubscription.cancel();
-  }
-
-  void addNewDevicesListener(void Function() listener) {
-    _notifierNew.addListener(listener);
-  }
-
-  void removeNewDevicesListener(void Function() listener) {
-    _notifierOld.removeListener(listener);
-  }
-
-  void addOldDevicesListener(void Function() listener) {
-    _notifierNew.addListener(listener);
-  }
-
-  void removeOldDevicesListener(void Function() listener) {
-    _notifierOld.removeListener(listener);
-  }
-
-  @protected
-  final AbstractBluetoothDeviceTracker<D> tracker;
-
-  AbstractBluetoothDeviceTrackerNotifier({
-    required this.tracker,
-  }) {
-    _newDeviceSubscription = tracker.newDevicesStream.listen((device) {
-      _notifierNew.notifyListeners();
-    });
-    _oldDeviceSubscription = tracker.oldDevicesStream.listen((device) {
-      _notifierOld.notifyListeners();
-    });
-  }
-
-  late final StreamSubscription _newDeviceSubscription;
-  late final StreamSubscription _oldDeviceSubscription;
-
+  late final StreamSubscription _onUpdateDevicesSubscription;
 }

@@ -1,71 +1,65 @@
 part of 'custom_bluetooth_device.dart';
 
-mixin CustomBluetoothDeviceDiscover on CustomBluetoothDevice, CustomBluetoothDeviceDispose {
-  Iterable<BluetoothService> get services => _services;
+mixin CustomBluetoothDeviceDiscover on CustomBluetoothDevice {
+  Iterable<BluetoothService> get bluetoothServices => _bluetoothServices;
 
-  void addClearListener(void Function() listener) {
-    _clearChangeNotifier.addListener(listener);
+  Stream<Iterable<BluetoothService>> get onBluetoothServicesUpdateStream => _onBluetoothServicesUpdateController.stream;
+  Stream<Iterable<BluetoothService>> get onDiscoverStream => _onBluetoothServicesUpdateController.stream.where((s) => s.isNotEmpty);
+  Stream<void> get clearStream => _onBluetoothServicesUpdateController.stream.where((s) => s.isEmpty);
+
+  Future<void> discover({
+    bool subscribeToServicesChanged = true,
+    int timeout = 15,
+  }) async {
+    if(bluetoothServices.isNotEmpty) return;
+    _bluetoothServices = await bluetoothDevice.discoverServices(
+      subscribeToServicesChanged: subscribeToServicesChanged,
+      timeout: timeout,
+    );
+    _onBluetoothServicesUpdateController.add(_bluetoothServices);
   }
-  void removeClearListener(void Function() listener) {
-    _clearChangeNotifier.removeListener(listener);
-  }
-  void addDiscoverListener(void Function() listener) {
-    _discoverChangeNotifier.addListener(listener);
-  }
-  void removeDiscoverListener(void Function() listener) {
-    _discoverChangeNotifier.removeListener(listener);
-  }
+
+  final StreamController<Iterable<BluetoothService>> _onBluetoothServicesUpdateController = StreamController.broadcast();
 
   @mustCallSuper
   @override
   void onInit(BluetoothDevice bluetoothDevice) {
     super.onInit(bluetoothDevice);
     _onDisconnectedSubscription = bluetoothDevice
-        .connectionState
-        .where((state) => state == BluetoothConnectionState.disconnected)
-        .listen((_) {
-      _services.clear();
-      _clearChangeNotifier.notifyListeners();
+      .connectionState
+      .where((state) => state == BluetoothConnectionState.disconnected)
+      .listen((_) {
+        if(_bluetoothServices.isEmpty) return;
+        _bluetoothServices.clear();
+        _onBluetoothServicesUpdateController.add(_bluetoothServices);
     });
-  }
-
-  Future<void> discover({
-    bool subscribeToServicesChanged = true,
-    int timeout = 15,
-  }) async {
-    if(services.isNotEmpty) return;
-    _services = await bluetoothDevice.discoverServices(
-      subscribeToServicesChanged: subscribeToServicesChanged,
-      timeout: timeout,
-    );
-    _discoverChangeNotifier.notifyListeners();
   }
 
   @override
   @mustCallSuper
   void dispose() {
     _onDisconnectedSubscription.cancel();
-    _discoverChangeNotifier.dispose();
-    _clearChangeNotifier.dispose();
-    _services.clear();
+    _bluetoothServices.clear();
     super.dispose();
   }
 
-  List<BluetoothService> _services = [];
-  final _ChangeNotifier _clearChangeNotifier = _ChangeNotifier();
-  final _ChangeNotifier _discoverChangeNotifier = _ChangeNotifier();
+  List<BluetoothService> _bluetoothServices = [];
   late final StreamSubscription _onDisconnectedSubscription;
 }
 
 class BluetoothDeviceDiscoverChangeNotifier extends ChangeNotifier {
   final CustomBluetoothDeviceDiscover device;
-  Iterable<BluetoothService> get services => device.services;
+  Iterable<BluetoothService> get bluetoothServices => device.bluetoothServices;
+
   BluetoothDeviceDiscoverChangeNotifier({
     required this.device,
   }) {
-    device.addClearListener(notifyListeners);
-    device.addDiscoverListener(notifyListeners);
+    _subscription = device.onBluetoothServicesUpdateStream.listen((_) {
+      notifyListeners();
+    });
   }
+
+  late final StreamSubscription _subscription;
 
   @visibleForTesting
   @pragma('vm:notify-debugger-on-exception')
@@ -75,8 +69,7 @@ class BluetoothDeviceDiscoverChangeNotifier extends ChangeNotifier {
   @mustCallSuper
   @override
   void dispose() {
-    device.removeClearListener(notifyListeners);
-    device.removeDiscoverListener(notifyListeners);
+    _subscription.cancel();
     super.dispose();
   }
 }

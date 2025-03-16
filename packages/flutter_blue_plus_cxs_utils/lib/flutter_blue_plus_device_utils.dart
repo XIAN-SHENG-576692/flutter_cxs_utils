@@ -3,43 +3,76 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
-class BluetoothDeviceIsConnectedChangeNotifier extends ChangeNotifier {
-  bool isConnected;
-  late final StreamSubscription _subscription;
-  BluetoothDeviceIsConnectedChangeNotifier({
-    required BluetoothDevice bluetoothDevice,
-  }) : isConnected = bluetoothDevice.isConnected {
-    _subscription = bluetoothDevice.connectionState.listen((connectionState) {
-      isConnected = connectionState == BluetoothConnectionState.connected;
+class BluetoothDeviceChangeNotifier extends ChangeNotifier {
+  @protected
+  @visibleForTesting
+  @pragma('vm:notify-debugger-on-exception')
+  @override
+  void notifyListeners() => super.notifyListeners();
+  final BluetoothDevice bluetoothDevice;
+  @mustCallSuper
+  void onInit() {}
+  BluetoothDeviceChangeNotifier({
+    required this.bluetoothDevice,
+  }) {
+    onInit();
+  }
+}
+
+mixin BluetoothConnectionStateChangeNotifier on BluetoothDeviceChangeNotifier {
+  BluetoothConnectionState? bluetoothConnectionState;
+  late final StreamSubscription _connectionStateSubscription;
+  @mustCallSuper
+  @override
+  onInit() {
+    _connectionStateSubscription = bluetoothDevice.connectionState.listen((connectionState) {
+      bluetoothConnectionState = connectionState;
       notifyListeners();
     });
   }
+  @mustCallSuper
   @override
   void dispose() {
-    _subscription.cancel();
+    _connectionStateSubscription.cancel();
     super.dispose();
   }
 }
 
-class BluetoothDeviceUtils {
-  const BluetoothDeviceUtils._();
-  static Future<bool> toggleConnection({
-    required BluetoothDevice device,
-  }) {
-    return (device.isConnected)
-      ? disconnect(device: device)
-      : connect(device: device);
+mixin BluetoothDeviceIsConnectedChangeNotifier on BluetoothConnectionStateChangeNotifier {
+  bool get isConnected => bluetoothDevice.isConnected;
+}
+
+mixin MtuChangeNotifier on BluetoothDeviceChangeNotifier {
+  int get mtuNow => bluetoothDevice.mtuNow;
+  late final StreamSubscription _mtuSubscription;
+  @mustCallSuper
+  @override
+  onInit() {
+    _mtuSubscription = bluetoothDevice.mtu.listen((mtu) {
+      notifyListeners();
+    });
   }
-  static Future<bool> connect({
-    required BluetoothDevice device,
-    int timeout = 35,
+  @mustCallSuper
+  @override
+  void dispose() {
+    _mtuSubscription.cancel();
+    super.dispose();
+  }
+}
+
+extension BluetoothDeviceUtils on BluetoothDevice {
+  Future<bool> toggleConnection() {
+    return (isConnected)
+      ? disconnect()
+      : connect();
+  }
+  Future<bool> connect({
+    Duration timeout = const Duration(seconds: 35),
   }) async {
     try {
-      // debugPrint("FBP: connect start");
-      await device.connect(
-        timeout: Duration(seconds: timeout),
+      await connect(
+        timeout: timeout,
       );
-      // debugPrint("FBP: connect finish");
       return true;
     } catch (e) {
       if (e is FlutterBluePlusException && e.code == FbpErrorCode.connectionCanceled.index) {
@@ -50,16 +83,13 @@ class BluetoothDeviceUtils {
       return false;
     }
   }
-  static Future<bool> disconnect({
-    required BluetoothDevice device,
+  Future<bool> disconnect({
     int timeout = 35,
   }) async {
     try {
-      // debugPrint("FBP: disconnect start");
-      await device.disconnect(
+      await disconnect(
         timeout: timeout,
       );
-      // debugPrint("FBP: disconnect finish");
       return true;
     } catch (e) {
       // debugPrint("ERROR: Disconnect: $e");

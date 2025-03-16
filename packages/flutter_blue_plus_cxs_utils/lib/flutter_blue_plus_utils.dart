@@ -4,61 +4,82 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
-class BluetoothAdapterStateChangeNotifier extends ChangeNotifier {
+class FlutterBluePlusChangeNotifier extends ChangeNotifier {
+  @protected
+  @visibleForTesting
+  @pragma('vm:notify-debugger-on-exception')
+  @override
+  void notifyListeners() => super.notifyListeners();
+  @mustCallSuper
+  void onInit() {}
+  FlutterBluePlusChangeNotifier() {
+    onInit();
+  }
+}
+
+mixin BluetoothAdapterStateChangeNotifier on FlutterBluePlusChangeNotifier {
   BluetoothAdapterState _adapterState = FlutterBluePlus.adapterStateNow;
   BluetoothAdapterState get adapterState => _adapterState;
-  late final StreamSubscription _subscription;
-  BluetoothAdapterStateChangeNotifier() {
-    _subscription = FlutterBluePlus.adapterState.listen((adapterState) {
+  late final StreamSubscription _adapterStateSubscription;
+  @mustCallSuper
+  @override
+  onInit() {
+    super.onInit();
+    _adapterStateSubscription = FlutterBluePlus.adapterState.listen((adapterState) {
       _adapterState = adapterState;
       notifyListeners();
     });
   }
+  @mustCallSuper
   @override
   void dispose() {
-    _subscription.cancel();
+    _adapterStateSubscription.cancel();
     super.dispose();
   }
 }
 
-class BluetoothIsOnChangeNotifier extends BluetoothAdapterStateChangeNotifier {
-  @protected
-  @override
-  BluetoothAdapterState get adapterState => super.adapterState;
+mixin BluetoothIsOnChangeNotifier on BluetoothAdapterStateChangeNotifier {
   bool get isOn => adapterState == BluetoothAdapterState.on;
-  BluetoothIsOnChangeNotifier();
 }
 
-class BluetoothIsScanningChangeNotifier extends ChangeNotifier {
+mixin BluetoothIsScanningChangeNotifier on FlutterBluePlusChangeNotifier {
   bool _isScanning = FlutterBluePlus.isScanningNow;
   bool get isScanning => _isScanning;
-  late final StreamSubscription _subscription;
-  BluetoothIsScanningChangeNotifier() {
-    _subscription = FlutterBluePlus.isScanning.listen((isScanning) {
+  late final StreamSubscription _isScanningSubscription;
+  @mustCallSuper
+  @override
+  onInit() {
+    super.onInit();
+    _isScanningSubscription = FlutterBluePlus.isScanning.listen((isScanning) {
       _isScanning = isScanning;
       notifyListeners();
     });
   }
+  @mustCallSuper
   @override
   void dispose() {
-    _subscription.cancel();
+    _isScanningSubscription.cancel();
     super.dispose();
   }
 }
 
-class ScanResultsChangeNotifier extends ChangeNotifier {
+mixin ScanResultsChangeNotifier on FlutterBluePlusChangeNotifier {
   List<ScanResult> _scanResults = [];
   Iterable<ScanResult> get scanResults => _scanResults;
-  late final StreamSubscription _subscription;
-  ScanResultsChangeNotifier() {
-    _subscription = FlutterBluePlus.scanResults.listen((scanResults) {
+  late final StreamSubscription _scanResultsSubscription;
+  @mustCallSuper
+  @override
+  onInit() {
+    super.onInit();
+    _scanResultsSubscription = FlutterBluePlus.scanResults.listen((scanResults) {
       _scanResults = scanResults;
       notifyListeners();
     });
   }
+  @mustCallSuper
   @override
   void dispose() {
-    _subscription.cancel();
+    _scanResultsSubscription.cancel();
     super.dispose();
   }
 }
@@ -77,8 +98,8 @@ class FlutterBluePlusUtils {
     required Duration scanDuration,
   }) async {
     if(!await requestPermission()) return;
-    await scanOff(requestPermission: requestPermission);
-    await scanOn(requestPermission: requestPermission, scanDuration: scanDuration);
+    await stopScan(requestPermission: requestPermission);
+    await startScan(requestPermission: requestPermission, scanDuration: scanDuration);
     return;
   }
   static Future<bool> toggleScan({
@@ -87,10 +108,10 @@ class FlutterBluePlusUtils {
   }) async {
     if(!await requestPermission()) return false;
     return (FlutterBluePlus.isScanningNow)
-        ? scanOff(requestPermission: requestPermission)
-        : scanOn(requestPermission: requestPermission, scanDuration: scanDuration);
+        ? stopScan(requestPermission: requestPermission)
+        : startScan(requestPermission: requestPermission, scanDuration: scanDuration);
   }
-  static Future<bool> scanOn({
+  static Future<bool> startScan({
     required Future<bool> Function() requestPermission,
     required Duration scanDuration,
   }) async {
@@ -111,7 +132,7 @@ class FlutterBluePlusUtils {
       return false;
     }
   }
-  static Future<bool> scanOff({
+  static Future<bool> stopScan({
     required Future<bool> Function() requestPermission,
   }) async {
     if(!await requestPermission()) return false;
@@ -120,49 +141,6 @@ class FlutterBluePlusUtils {
       return true;
     } catch (e) {
       debugPrint("ERROR: scanOff: $e");
-      return false;
-    }
-  }
-  static Future<bool> toggleConnection({
-    required BluetoothDevice device,
-  }) {
-    return (device.isConnected)
-        ? disconnect(device: device)
-        : connect(device: device);
-  }
-  static Future<bool> connect({
-    required BluetoothDevice device,
-    int timeout = 35,
-  }) async {
-    try {
-      debugPrint("FBP: connect start");
-      await device.connect(
-        timeout: Duration(seconds: timeout),
-      );
-      debugPrint("FBP: connect finish");
-      return true;
-    } catch (e) {
-      if (e is FlutterBluePlusException && e.code == FbpErrorCode.connectionCanceled.index) {
-        // ignore connections canceled by the user
-      } else {
-        debugPrint("ERROR: Connect: $e");
-      }
-      return false;
-    }
-  }
-  static Future<bool> disconnect({
-    required BluetoothDevice device,
-    int timeout = 35,
-  }) async {
-    try {
-      debugPrint("FBP: disconnect start");
-      await device.disconnect(
-        timeout: timeout,
-      );
-      debugPrint("FBP: disconnect finish");
-      return true;
-    } catch (e) {
-      debugPrint("ERROR: Disconnect: $e");
       return false;
     }
   }
