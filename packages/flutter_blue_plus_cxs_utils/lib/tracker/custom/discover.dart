@@ -4,8 +4,8 @@ mixin CustomBluetoothDeviceDiscover on CustomBluetoothDevice {
   Iterable<BluetoothService> get bluetoothServices => _bluetoothServices;
 
   Stream<Iterable<BluetoothService>> get onBluetoothServicesUpdateStream => _onBluetoothServicesUpdateController.stream;
-  Stream<Iterable<BluetoothService>> get onDiscoverStream => _onBluetoothServicesUpdateController.stream.where((s) => s.isNotEmpty);
-  Stream<void> get clearStream => _onBluetoothServicesUpdateController.stream.where((s) => s.isEmpty);
+  Stream<Iterable<BluetoothService>> get onDiscoverBluetoothServicesStream => _onBluetoothServicesUpdateController.stream.where((s) => s.isNotEmpty);
+  Stream<void> get onClearBluetoothServicesStream => _onBluetoothServicesUpdateController.stream.where((s) => s.isEmpty);
 
   Future<void> discover({
     bool subscribeToServicesChanged = true,
