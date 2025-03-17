@@ -73,3 +73,32 @@ class BluetoothDeviceDiscoverChangeNotifier extends ChangeNotifier {
     super.dispose();
   }
 }
+
+mixin CustomBluetoothDeviceDiscoverTrackerChangeNotifier<D extends CustomBluetoothDeviceDiscover> on CustomBluetoothDeviceTrackerChangeNotifier<D> {
+  @mustCallSuper
+  @override
+  void onInit() {
+    super.onInit();
+    for(final device in tracker.devices) {
+      _discoverSubscriptions.add(device.onBluetoothServicesUpdateStream.listen((_) {
+        notifyListeners();
+      }));
+    }
+    tracker.onCreateNewDeviceStream.listen((device) {
+      _discoverSubscriptions.add(device.onBluetoothServicesUpdateStream.listen((_) {
+        notifyListeners();
+      }));
+    });
+    return;
+  }
+  @mustCallSuper
+  @override
+  void dispose() {
+    for(final s in _discoverSubscriptions) {
+      s.cancel();
+    }
+    _discoverSubscriptions.clear();
+    super.dispose();
+  }
+  final List<StreamSubscription> _discoverSubscriptions = [];
+}

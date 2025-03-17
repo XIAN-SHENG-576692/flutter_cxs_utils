@@ -42,7 +42,7 @@ mixin BluetoothDeviceIsConnectedChangeNotifier on BluetoothConnectionStateChange
   bool get isConnected => bluetoothDevice.isConnected;
 }
 
-mixin MtuChangeNotifier on BluetoothDeviceChangeNotifier {
+mixin BluetoothDeviceMtuChangeNotifier on BluetoothDeviceChangeNotifier {
   int get mtuNow => bluetoothDevice.mtuNow;
   late final StreamSubscription _mtuSubscription;
   @mustCallSuper

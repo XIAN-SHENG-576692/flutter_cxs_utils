@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
-import '../abstract_bluetooth_device_tracker.dart' show AbstractBluetoothDeviceTracker;
+import '../abstract_bluetooth_device_tracker.dart' show AbstractBluetoothDeviceTracker, AbstractBluetoothDeviceTrackerChangeNotifier;
 
 part 'connectable.dart';
+part 'connection.dart';
 part 'discover.dart';
 part 'rssi.dart';
 part 'scan.dart';
@@ -60,4 +61,14 @@ class CustomBluetoothDeviceTracker<D extends CustomBluetoothDevice> extends Abst
     isExistingInDevices: (result, device) => device.matchesScanResult(result),
     onExistingDeviceUpdated: (result, device) => device.onUpdateByScanResult(result),
   );
+}
+
+class CustomBluetoothDeviceTrackerChangeNotifier<D extends CustomBluetoothDevice> extends AbstractBluetoothDeviceTrackerChangeNotifier<D> {
+  @mustCallSuper
+  void onInit() {
+    return;
+  }
+  CustomBluetoothDeviceTrackerChangeNotifier({required super.tracker}) {
+    onInit();
+  }
 }

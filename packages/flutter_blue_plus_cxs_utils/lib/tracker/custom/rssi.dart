@@ -45,3 +45,32 @@ mixin CustomBluetoothDeviceTrackerRssi<D extends CustomBluetoothDeviceRssi> on C
     });
   }
 }
+
+mixin CustomBluetoothDeviceRssiTrackerChangeNotifier<D extends CustomBluetoothDeviceRssi> on CustomBluetoothDeviceTrackerChangeNotifier<D> {
+  @mustCallSuper
+  @override
+  void onInit() {
+    super.onInit();
+    for(final device in tracker.devices) {
+      _rssiSubscriptions.add(device.rssiStream.listen((_) {
+        notifyListeners();
+      }));
+    }
+    tracker.onCreateNewDeviceStream.listen((device) {
+      _rssiSubscriptions.add(device.rssiStream.listen((_) {
+        notifyListeners();
+      }));
+    });
+    return;
+  }
+  @mustCallSuper
+  @override
+  void dispose() {
+    for(final s in _rssiSubscriptions) {
+      s.cancel();
+    }
+    _rssiSubscriptions.clear();
+    super.dispose();
+  }
+  final List<StreamSubscription> _rssiSubscriptions = [];
+}
