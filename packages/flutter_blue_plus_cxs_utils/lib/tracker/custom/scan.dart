@@ -44,12 +44,12 @@ mixin CustomBluetoothDeviceScanTrackerChangeNotifier<D extends CustomBluetoothDe
   void onInit() {
     super.onInit();
     for(final device in tracker.devices) {
-      _isScannedSubscriptions.add(device.isScannedStream.listen((_) {
+      _isScannedSubscriptionsCustomBluetoothDeviceScanTrackerChangeNotifier.add(device.isScannedStream.listen((_) {
         notifyListeners();
       }));
     }
     tracker.onCreateNewDeviceStream.listen((device) {
-      _isScannedSubscriptions.add(device.isScannedStream.listen((_) {
+      _isScannedSubscriptionsCustomBluetoothDeviceScanTrackerChangeNotifier.add(device.isScannedStream.listen((_) {
         notifyListeners();
       }));
     });
@@ -58,11 +58,11 @@ mixin CustomBluetoothDeviceScanTrackerChangeNotifier<D extends CustomBluetoothDe
   @mustCallSuper
   @override
   void dispose() {
-    for(final s in _isScannedSubscriptions) {
+    for(final s in _isScannedSubscriptionsCustomBluetoothDeviceScanTrackerChangeNotifier) {
       s.cancel();
     }
-    _isScannedSubscriptions.clear();
+    _isScannedSubscriptionsCustomBluetoothDeviceScanTrackerChangeNotifier.clear();
     super.dispose();
   }
-  final List<StreamSubscription> _isScannedSubscriptions = [];
+  final List<StreamSubscription> _isScannedSubscriptionsCustomBluetoothDeviceScanTrackerChangeNotifier = [];
 }
