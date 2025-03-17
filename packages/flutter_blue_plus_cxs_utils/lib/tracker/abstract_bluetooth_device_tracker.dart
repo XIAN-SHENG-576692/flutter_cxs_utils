@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
+import '../flutter_blue_plus_utils.dart';
+
 class AbstractBluetoothDeviceUpdate<D> {
   D device;
   bool isNew;
@@ -59,12 +61,7 @@ class AbstractBluetoothDeviceTracker<D> {
   }
 }
 
-class AbstractBluetoothDevicesLengthTrackerChangeNotifier<D> extends ChangeNotifier {
-
-  @mustCallSuper
-  void onInit() {
-    return;
-  }
+class AbstractBluetoothDevicesLengthTrackerChangeNotifier<D> extends FlutterBluePlusChangeNotifier {
 
   @protected
   @visibleForTesting
