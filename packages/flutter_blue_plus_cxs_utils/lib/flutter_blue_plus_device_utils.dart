@@ -63,16 +63,19 @@ mixin BluetoothDeviceMtuChangeNotifier on BluetoothDeviceChangeNotifier {
 }
 
 extension BluetoothDeviceUtils on BluetoothDevice {
-  Future<bool> toggleConnection() {
-    return (isConnected)
-      ? disconnect()
-      : connect();
+  static Future<bool> toggleConnection({
+    required BluetoothDevice device,
+  }) {
+    return (device.isConnected)
+      ? disconnect(device: device)
+      : connect(device: device);
   }
-  Future<bool> connect({
+  static Future<bool> connect({
+    required BluetoothDevice device,
     Duration timeout = const Duration(seconds: 35),
   }) async {
     try {
-      await connect(
+      await device.connect(
         timeout: timeout,
       );
       return true;
@@ -85,11 +88,12 @@ extension BluetoothDeviceUtils on BluetoothDevice {
       return false;
     }
   }
-  Future<bool> disconnect({
+  static Future<bool> disconnect({
+    required BluetoothDevice device,
     int timeout = 35,
   }) async {
     try {
-      await disconnect(
+      await device.disconnect(
         timeout: timeout,
       );
       return true;
