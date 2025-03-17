@@ -25,6 +25,7 @@ mixin BluetoothConnectionStateChangeNotifier on BluetoothDeviceChangeNotifier {
   @mustCallSuper
   @override
   onInit() {
+    super.onInit();
     _connectionStateSubscription = bluetoothDevice.connectionState.listen((connectionState) {
       bluetoothConnectionState = connectionState;
       notifyListeners();
@@ -48,6 +49,7 @@ mixin BluetoothDeviceMtuChangeNotifier on BluetoothDeviceChangeNotifier {
   @mustCallSuper
   @override
   onInit() {
+    super.onInit();
     _mtuSubscription = bluetoothDevice.mtu.listen((mtu) {
       notifyListeners();
     });
