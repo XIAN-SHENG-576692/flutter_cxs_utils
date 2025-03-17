@@ -7,14 +7,14 @@ mixin CustomBluetoothDeviceScan on CustomBluetoothDevice {
   @override
   void onInit(BluetoothDevice bluetoothDevice) {
     super.onInit(bluetoothDevice);
-    _isScanningSubscription = FlutterBluePlus.isScanning.listen((isScanning) {
+    _isScanningSubscriptionCustomBluetoothDeviceScan = FlutterBluePlus.isScanning.listen((isScanning) {
       if(!_isScanned) return;
       _isScanned = false;
       _isScannedController.add(_isScanned);
     });
   }
 
-  late final StreamSubscription<bool> _isScanningSubscription;
+  late final StreamSubscription<bool> _isScanningSubscriptionCustomBluetoothDeviceScan;
   final StreamController<bool> _isScannedController = StreamController.broadcast();
   Stream<bool> get isScannedStream => _isScannedController.stream;
 
@@ -32,7 +32,7 @@ mixin CustomBluetoothDeviceScan on CustomBluetoothDevice {
   @mustCallSuper
   @override
   void dispose() {
-    _isScanningSubscription.cancel();
+    _isScanningSubscriptionCustomBluetoothDeviceScan.cancel();
     _isScannedController.close();
     super.dispose();
   }

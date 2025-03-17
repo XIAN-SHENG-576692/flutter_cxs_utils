@@ -73,7 +73,7 @@ class AbstractBluetoothDevicesLengthTrackerChangeNotifier<D> extends FlutterBlue
   @protected
   @override
   void dispose() {
-    _onDevicesLengthSubscription.cancel();
+    _onChangeDevicesLengthSubscription.cancel();
     super.dispose();
   }
 
@@ -84,12 +84,12 @@ class AbstractBluetoothDevicesLengthTrackerChangeNotifier<D> extends FlutterBlue
     required this.tracker,
   }) {
     onInit();
-    _onDevicesLengthSubscription = tracker.onCreateNewDeviceStream.listen((device) {
+    _onChangeDevicesLengthSubscription = tracker.onCreateNewDeviceStream.listen((device) {
       notifyListeners();
     });
   }
 
-  late final StreamSubscription _onDevicesLengthSubscription;
+  late final StreamSubscription _onChangeDevicesLengthSubscription;
 }
 
 mixin AbstractBluetoothDeviceLastUpdatedTrackerChangeNotifier<D> on AbstractBluetoothDevicesLengthTrackerChangeNotifier<D> {
@@ -100,7 +100,7 @@ mixin AbstractBluetoothDeviceLastUpdatedTrackerChangeNotifier<D> on AbstractBlue
   @override
   void onInit() {
     super.onInit();
-    _onUpdateDevicesSubscription = tracker.onUpdateDevicesStream.listen((device) {
+    _onLastUpdateDevicesSubscription = tracker.onUpdateDevicesStream.listen((device) {
       lastUpdatedDevice = device;
       notifyListeners();
     });
@@ -109,9 +109,9 @@ mixin AbstractBluetoothDeviceLastUpdatedTrackerChangeNotifier<D> on AbstractBlue
   @mustCallSuper
   @override
   void dispose() {
-    _onUpdateDevicesSubscription.cancel();
+    _onLastUpdateDevicesSubscription.cancel();
     super.dispose();
   }
 
-  late final StreamSubscription _onUpdateDevicesSubscription;
+  late final StreamSubscription _onLastUpdateDevicesSubscription;
 }
