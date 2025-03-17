@@ -8,6 +8,7 @@ mixin CustomBluetoothDeviceScan on CustomBluetoothDevice {
   void onInit(BluetoothDevice bluetoothDevice) {
     super.onInit(bluetoothDevice);
     _isScanningSubscriptionCustomBluetoothDeviceScan = FlutterBluePlus.isScanning.listen((isScanning) {
+      if(!isScanning) return;
       if(!_isScanned) return;
       _isScanned = false;
       _isScannedController.add(_isScanned);
