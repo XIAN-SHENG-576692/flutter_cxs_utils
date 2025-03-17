@@ -1,6 +1,6 @@
 part of 'custom_bluetooth_device.dart';
 
-mixin CustomBluetoothDeviceConnectionStateTrackerChangeNotifier<D extends CustomBluetoothDevice> on CustomBluetoothDeviceTrackerChangeNotifier<D> {
+mixin CustomBluetoothDeviceConnectionStateTrackerChangeNotifier<D extends CustomBluetoothDevice> on CustomBluetoothDeviceLengthTrackerChangeNotifier<D> {
   @mustCallSuper
   @override
   void onInit() {

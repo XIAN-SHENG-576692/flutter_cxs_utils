@@ -74,7 +74,7 @@ class BluetoothDeviceDiscoverChangeNotifier extends ChangeNotifier {
   }
 }
 
-mixin CustomBluetoothDeviceDiscoverTrackerChangeNotifier<D extends CustomBluetoothDeviceDiscover> on CustomBluetoothDeviceTrackerChangeNotifier<D> {
+mixin CustomBluetoothDeviceDiscoverTrackerChangeNotifier<D extends CustomBluetoothDeviceDiscover> on CustomBluetoothDeviceLengthTrackerChangeNotifier<D> {
   @mustCallSuper
   @override
   void onInit() {

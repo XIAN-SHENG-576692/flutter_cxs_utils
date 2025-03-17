@@ -38,7 +38,7 @@ mixin CustomBluetoothDeviceScan on CustomBluetoothDevice {
   }
 }
 
-mixin CustomBluetoothDeviceScanTrackerChangeNotifier<D extends CustomBluetoothDeviceScan> on CustomBluetoothDeviceTrackerChangeNotifier<D> {
+mixin CustomBluetoothDeviceScanTrackerChangeNotifier<D extends CustomBluetoothDeviceScan> on CustomBluetoothDeviceLengthTrackerChangeNotifier<D> {
   @mustCallSuper
   @override
   void onInit() {

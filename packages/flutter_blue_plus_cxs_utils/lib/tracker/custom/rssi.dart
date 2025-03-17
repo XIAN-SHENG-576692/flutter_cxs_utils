@@ -46,7 +46,7 @@ mixin CustomBluetoothDeviceTrackerRssi<D extends CustomBluetoothDeviceRssi> on C
   }
 }
 
-mixin CustomBluetoothDeviceRssiTrackerChangeNotifier<D extends CustomBluetoothDeviceRssi> on CustomBluetoothDeviceTrackerChangeNotifier<D> {
+mixin CustomBluetoothDeviceRssiTrackerChangeNotifier<D extends CustomBluetoothDeviceRssi> on CustomBluetoothDeviceLengthTrackerChangeNotifier<D> {
   @mustCallSuper
   @override
   void onInit() {

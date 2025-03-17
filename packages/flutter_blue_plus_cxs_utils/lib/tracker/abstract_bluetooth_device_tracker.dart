@@ -59,11 +59,12 @@ class AbstractBluetoothDeviceTracker<D> {
   }
 }
 
-class AbstractBluetoothDeviceTrackerChangeNotifier<D> extends ChangeNotifier {
+class AbstractBluetoothDevicesLengthTrackerChangeNotifier<D> extends ChangeNotifier {
 
-  Iterable<D> get devices => tracker.devices;
-
-  AbstractBluetoothDeviceUpdate? lastUpdatedDevice;
+  @mustCallSuper
+  void onInit() {
+    return;
+  }
 
   @protected
   @visibleForTesting
@@ -75,20 +76,44 @@ class AbstractBluetoothDeviceTrackerChangeNotifier<D> extends ChangeNotifier {
   @protected
   @override
   void dispose() {
-    _onUpdateDevicesSubscription.cancel();
+    _onDevicesLengthSubscription.cancel();
     super.dispose();
   }
 
   @protected
   final AbstractBluetoothDeviceTracker<D> tracker;
 
-  AbstractBluetoothDeviceTrackerChangeNotifier({
+  AbstractBluetoothDevicesLengthTrackerChangeNotifier({
     required this.tracker,
   }) {
+    onInit();
+    _onDevicesLengthSubscription = tracker.onCreateNewDeviceStream.listen((device) {
+      notifyListeners();
+    });
+  }
+
+  late final StreamSubscription _onDevicesLengthSubscription;
+}
+
+mixin AbstractBluetoothDeviceLastUpdatedTrackerChangeNotifier<D> on AbstractBluetoothDevicesLengthTrackerChangeNotifier<D> {
+
+  AbstractBluetoothDeviceUpdate? lastUpdatedDevice;
+
+  @mustCallSuper
+  @override
+  void onInit() {
+    super.onInit();
     _onUpdateDevicesSubscription = tracker.onUpdateDevicesStream.listen((device) {
       lastUpdatedDevice = device;
       notifyListeners();
     });
+    return;
+  }
+  @mustCallSuper
+  @override
+  void dispose() {
+    _onUpdateDevicesSubscription.cancel();
+    super.dispose();
   }
 
   late final StreamSubscription _onUpdateDevicesSubscription;

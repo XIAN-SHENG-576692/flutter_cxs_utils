@@ -25,7 +25,7 @@ mixin CustomBluetoothDeviceConnectable on CustomBluetoothDevice {
 
 
 
-mixin CustomBluetoothDeviceConnectableTrackerChangeNotifier<D extends CustomBluetoothDeviceConnectable> on CustomBluetoothDeviceTrackerChangeNotifier<D> {
+mixin CustomBluetoothDeviceConnectableTrackerChangeNotifier<D extends CustomBluetoothDeviceConnectable> on CustomBluetoothDeviceLengthTrackerChangeNotifier<D> {
   @mustCallSuper
   @override
   void onInit() {
