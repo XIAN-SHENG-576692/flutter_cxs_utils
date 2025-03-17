@@ -83,7 +83,6 @@ class AbstractBluetoothDevicesLengthTrackerChangeNotifier<D> extends FlutterBlue
   AbstractBluetoothDevicesLengthTrackerChangeNotifier({
     required this.tracker,
   }) {
-    onInit();
     _onChangeDevicesLengthSubscription = tracker.onCreateNewDeviceStream.listen((device) {
       notifyListeners();
     });
