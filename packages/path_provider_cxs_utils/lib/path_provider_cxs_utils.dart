@@ -4,8 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 
-export 'package:path_provider/path_provider.dart';
-
 Future<Directory?> getSystemDownloadDirectory() async {
   try {
     if (Platform.isIOS) {
