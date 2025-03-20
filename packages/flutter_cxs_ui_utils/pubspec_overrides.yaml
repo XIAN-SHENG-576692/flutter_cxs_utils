@@ -1,4 +1,0 @@
-# melos_managed_dependency_overrides: flutter_cxs_common_utils
-dependency_overrides:
-  flutter_cxs_common_utils:
-    path: ..\\flutter_cxs_common_utils

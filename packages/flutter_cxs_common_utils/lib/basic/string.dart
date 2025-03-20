@@ -22,11 +22,11 @@ extension ToUint8List on String {
 extension CharacterConvertor on String {
   decodeHtml() {
     return replaceAll('&amp;', '/')
-        .replaceAll("&quot;", "\"")
-        .replaceAll("&ldquo;", "“")
-        .replaceAll("&rdquo;", "”")
-        .replaceAll("<br>", "\n")
-        .replaceAll("&gt;", ">")
-        .replaceAll("&lt;", "<");
+      .replaceAll("&quot;", "\"")
+      .replaceAll("&ldquo;", "“")
+      .replaceAll("&rdquo;", "”")
+      .replaceAll("<br>", "\n")
+      .replaceAll("&gt;", ">")
+      .replaceAll("&lt;", "<");
   }
 }
